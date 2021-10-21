@@ -5,47 +5,47 @@ import (
 
 	"github.com/gin-contrib/static"
 
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
-type Agent struct {
-	MemberID   string
-	PosX, PosY uint
+type UserLogin struct {
+	User_id  string `json:"user_id"`
+	Password string `json:"password"`
+}
+type Token struct {
+	token string
 }
 
-var agents []Agent
+var user []UserLogin
 
-func AgentAddHandler(c *gin.Context) {
-	agentID := c.Param("agentID")
-
-	agents = append(agents, Agent{agentID, 100, 200})
-}
-
-func AgentReaderHandler(c *gin.Context) {
-	c.JSON(200, agents)
+func UserReaderHandler(u *gin.Context) {
+	fmt.Println("bonjour")
 }
 
 func main() {
+
+	// router := gin.New()
 	router := gin.Default()
-	router.GET("/join/:agentID", AgentAddHandler)
+	// m := melody.New()
 
-	router.GET("/agents", AgentReaderHandler)
+	router.POST("/login", func(context *gin.Context) {
+		user := UserLogin{}
+		// using BindJson method to serialize body with struct
+		if err := context.BindJSON(&user); err != nil {
+			context.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+		context.JSON(http.StatusAccepted, gin.H{"token": "tokenomg"})
+		// context.JSON(http.StatusAccepted, &user)
 
-	// if Allow DirectoryIndex
-	// router.Use(static.Serve("/", static.LocalFile("/tmp", true)))
-	// set prefix
-	// router.Use(static.Serve("/static", static.LocalFile("/tmp", true)))
-
-	router.Use(static.Serve("/", static.LocalFile("/public/index.html", false)))
-	router.GET("/ping", func(c *gin.Context) {
-		c.String(200, "test")
 	})
-	// Listen and Server in 0.0.0.0:8080
-	if err := router.Run(":8090"); err != nil {
-		log.Fatal("err")
-	}
-	// port := "8090"
 
-	// log.Println("Serving on port:", port)
-	// router.Run(":" + port)
+	router.Use(static.Serve("/", static.LocalFile("../client/public", false)))
+	if err := router.Run(":8090"); err != nil {
+		log.Fatal(err)
+	}
+
 }
