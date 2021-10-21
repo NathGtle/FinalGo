@@ -1,13 +1,11 @@
 package main
 
 import (
-	"log"
-
-	"github.com/gin-contrib/static"
-
 	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,6 +15,10 @@ type UserLogin struct {
 }
 type Token struct {
 	token string
+}
+type Agent struct {
+	ID         string
+	PosX, PosY int
 }
 
 var user []UserLogin
@@ -29,7 +31,6 @@ func main() {
 
 	// router := gin.New()
 	router := gin.Default()
-	// m := melody.New()
 
 	router.POST("/login", func(context *gin.Context) {
 		user := UserLogin{}
