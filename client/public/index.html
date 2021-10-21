@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+</head>
+
+<style>
+</style>
+<body>
+
+<!-- 
+<div id="connect">Connect</div>
+<div id="action">Action</div> 
+-->
+
+<script src="https://pixijs.download/release/pixi.js"></script>
+<script src="/js/dom_utils.js"></script>
+
+<script src="/js/constants.js"></script>
+<script src="/js/app.js"></script>
+
+<script>
+
+var ws = undefined;
+
+var agentsMap = {};
+
+const app = InitApp();
+
+// Update loop
+app.ticker.add((delta) => {
+
+});
+
+// btConnect = document.getElementById("connect");
+// btAction = document.getElementById("action");
+
+function Connect() {
+	const url = "ws://" + window.location.host + "/ws/monitor";
+	
+	ws = new WebSocket(url);
+
+	ws.onmessage = function (msg) {
+	    //console.log("onmessage:", msg.data);
+	    
+	    let agentUpdate = JSON.parse(msg.data);
+	    
+		let pos = {
+			x : agentUpdate.x,
+			y : agentUpdate.y
+		}
+		
+	    if (agentUpdate.id in agentsMap) {
+			agentsMap[agentUpdate.id].x = pos.x;
+			agentsMap[agentUpdate.id].y = pos.y;
+
+	    } else {
+			let v = app.NewAgent(pos);
+
+			agentsMap[agentUpdate.id] = v;
+	    }
+	};
+}
+
+// function Action() {
+// 	const message = {
+//     }
+// 
+//     ws.send(JSON.stringify(message));
+// }
+
+// btConnect.addEventListener("click", Connect, false);
+// btAction.addEventListener("click", Action, false);
+
+document.body.appendChild(app.view);
+
+OnDocReady(function(){
+	Connect();
+});
+
+</script>
+</body>
+</html>

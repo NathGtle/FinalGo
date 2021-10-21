@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+
+</head>
+
+<style>
+</style>
+<body>
+
+<!-- 
+<div id="connect">Connect</div>
+<div id="action">Action</div> 
+-->
+
+<script src="https://pixijs.download/release/pixi.js"></script>
+
+<script src="/js/dom_utils.js"></script>
+<script src="/js/math.js"></script>
+<script src="/js/constants.js"></script>
+<script src="/js/app.js"></script>
+
+<script>
+
+// Différencier local + remote vehicles
+
+var ws = undefined;
+
+var TargetPos = PIXI.Point;
+
+function UpdateVehicle(delta, v) {
+	let vRoute = {
+		x : TargetPos.x-vehicle.position.x,
+		y : TargetPos.y-vehicle.position.y
+	}
+
+	let dist = Length(vRoute);
+
+	if (dist < 1) {
+		return;
+	}
+
+	let vDir = {
+		x : vRoute.x / dist,
+		y : vRoute.y / dist
+	}
+
+	//vehicle.rotation += 0.001 * delta;
+	//vehicle.position.x += 0.1;
+	vehicle.position.x += vDir.x;
+	vehicle.position.y += vDir.y;
+
+	let pos = {
+		x : vehicle.position.x,
+		y : vehicle.position.y
+	}
+
+	let jsonToSend = JSON.stringify(pos);
+
+	ws.send(jsonToSend);
+    
+	// if (vehicle.Enroute) {
+	// 	if (distance(target, pos) < threshold) {
+	// 		vehicle.Enroute = false;
+	// 	} else {
+	// 		translate pos 
+	// 	}
+	// }
+}
+
+const app = InitApp();
+
+const vehicle = PIXI.Sprite.from('/assets/vehicle.png');
+
+// center the sprite's anchor point
+vehicle.anchor.set(0.5);
+
+// move the sprite to the center of the screen
+vehicle.x = app.screen.width / 2;
+vehicle.y = app.screen.height / 2;
+TargetPos.x = vehicle.x;
+TargetPos.y = vehicle.y;
+
+vehicle.scale.x = 0.25;
+vehicle.scale.y = 0.25;
+
+app.stage.addChild(vehicle);
+
+// Update loop
+app.ticker.add((delta) => {
+    UpdateVehicle(delta, vehicle);
+});
+
+// btConnect = document.getElementById("connect");
+// btAction = document.getElementById("action");
+
+function Connect() {
+	console.log("connect");
+	//const url = "ws://" + window.location.host + "/ws";
+	const url = "ws://" + window.location.host + "/ws/agent";
+	ws = new WebSocket(url);
+
+	ws.onmessage = function (msg) {
+	    //insertMessage(JSON.parse(msg.data))
+	    console.log("agent onmessage:", msg);
+	};
+}
+
+function Action() {
+	if (ws == undefined) {
+		return;
+	}
+
+	vehicle.x += 2;
+
+ 	var pos = {
+		'x' : vehicle.x,
+		'y' : vehicle.y,
+	}
+
+	let jsonToSend = JSON.stringify(pos)
+
+	console.log("Sent:", jsonToSend);
+
+    ws.send(jsonToSend);
+    //input.value = "";
+}
+
+// btConnect.addEventListener("click", Connect, false);
+// btAction.addEventListener("click", Action, false);
+
+document.body.appendChild(app.view);
+
+OnDocReady(function(){
+	Connect();
+});
+
+</script>
+</body>
+</html>
