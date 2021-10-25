@@ -4,6 +4,9 @@
 /client/node_modules
 /.pnp
 .pnp.js
+/server/go.mod
+/server/project.exe
+/server/go.sum
 
 # testing
 /coverage
